@@ -10,10 +10,6 @@ import os
 import re
 
 import streamlit as st
-from docx import Document
-from google import genai
-from google.genai import types
-from pypdf import PdfReader
 
 DEFAULT_MODEL = "gemini-2.5-flash"
 MAX_RESUME_CHARS = 20000  # keeps the prompt small and the cost low
@@ -35,6 +31,8 @@ def extract_text(filename: str, data: bytes) -> str:
     """Return plain text from a PDF, DOCX or TXT upload."""
     name = filename.lower()
     if name.endswith(".pdf"):
+        from pypdf import PdfReader
+
         reader = PdfReader(io.BytesIO(data))
         if reader.is_encrypted:
             try:
@@ -44,6 +42,8 @@ def extract_text(filename: str, data: bytes) -> str:
         pages = [(page.extract_text() or "") for page in reader.pages]
         return "\n".join(pages).strip()
     if name.endswith(".docx"):
+        from docx import Document
+
         doc = Document(io.BytesIO(data))
         parts = [p.text for p in doc.paragraphs if p.text.strip()]
         for table in doc.tables:  # many resumes put content in tables
@@ -168,6 +168,9 @@ def parse_response(raw: str) -> dict:
 
 
 def analyze_resume(api_key: str, model: str, resume_text: str, job_description: str) -> dict:
+    from google import genai
+    from google.genai import types
+
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model=model,
@@ -252,8 +255,32 @@ def render_results(result: dict) -> None:
     )
 
 
+def check_dependencies() -> list:
+    """Return the pip package names that are not installed."""
+    import importlib.util
+
+    needed = {"pypdf": "pypdf", "docx": "python-docx", "google.genai": "google-genai"}
+    missing = []
+    for module, package in needed.items():
+        try:
+            found = importlib.util.find_spec(module) is not None
+        except (ImportError, ValueError):
+            found = False
+        if not found:
+            missing.append(package)
+    return missing
+
+
 def main() -> None:
     st.set_page_config(page_title="ATS Resume Checker", page_icon="📄", layout="wide")
+    missing = check_dependencies()
+    if missing:
+        st.error(
+            "Missing packages: " + ", ".join(missing) + ". "
+            "Make sure your GitHub repo has a file named exactly `requirements.txt` "
+            "(with an 's') in the main folder, listing these packages, then reboot the app."
+        )
+        st.stop()
     st.title("📄 ATS Resume Checker")
     st.caption("Upload your resume and get an ATS score with practical ways to improve it.")
 
@@ -301,3 +328,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+            
+
+
+
+
+
+     
+  
