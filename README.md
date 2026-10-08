@@ -11,7 +11,7 @@ and suggests concrete improvements, powered by Google's Gemini Flash model.
 - Download the report as JSON
 
 ## Run locally
-1. Install Python 3.9+ and get a free Gemini API key from https://aistudio.google.com
+1. Install Python 3.10+ and get a free Gemini API key from https://aistudio.google.com
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -39,6 +39,13 @@ and suggests concrete improvements, powered by Google's Gemini Flash model.
 The model name is editable in the sidebar (default `gemini-2.5-flash`). If Google retires
 that name, enter a current Gemini Flash model name from https://ai.google.dev/gemini-api/docs/models
 
+## Troubleshooting
+- **`ModuleNotFoundError` (for example `docx`) on Streamlit Cloud:** the packages were not installed.
+  Check that the repo has a file named exactly `requirements.txt` (with an "s") in the main folder,
+  that it lists `python-docx` (not `docx`), then use **Manage app -> Reboot app**.
+- **"Model not found" error:** change the model name in the sidebar to a current Gemini Flash model.
+- **"Please add your Gemini API key":** add `GEMINI_API_KEY` in Streamlit **Secrets** or paste it in the sidebar.
+
 ## Notes
 - Resumes are sent to the Gemini API for analysis and are not stored by this app.
 - The score is an AI estimate, not the output of a real ATS. Use it as guidance.
@@ -50,3 +57,4 @@ app.py             # Streamlit app
 requirements.txt   # Dependencies
 README.md          # This file
 ```
+
